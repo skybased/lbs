@@ -1,67 +1,70 @@
-/*
-Tone function now added back in 2/2/2017 USB BFO now 9001500
-From N6QW using the 240 X 320 TFT Color display with the Si5351 Clock Generator.
-The sketch includes selectable USB/LSB, a Tune function with 988 Hz tone and the
-LO output. The sketch also includes a built in S Meter. Pete N6QW 1/18/2015
-You must use the CD4050 Logic Level Convertor to make this display work
-  Arduino, CD 4050 Level Shifter, 240 X 320 Display Wiring            N6QW 1/2017   
+/* 
+Pete N6QW 1/18/2015
 
-  Updates and optimizations added by KU7D & N4AXE 11/11/2017
+USB BFO now 9001500. Using the 240 X 320 TFT Color display 
+and the Si5351 Clock Generator. The sketch includes selectable 
+USB/LSB, a Tune function with 988 Hz tone and the LO output.You must
+use the CD4050 Logic Level Convertor to make this display work with
+the Arduino.
+
+Updates and optimizations added by KU7D & N4AXE 11/2017
+
+CD 4050 Level Shifter, 240 X 320 Display Wiring         N6QW 1/2017   
+
+  
                   
     Arduino Pin #     CD4050 Pin In   CD4050 Pin Out    240X320 Pin
                   
-    ICSP 1 (MISO)     3                2             SDO (MISO)
+    ICSP 1 (MISO)        3               2            SDO (MISO)
                   
-    3.3 VDC             1                NA            LED
+    3.3 VDC              1               NA           LED
                   
-    ICSP 3 (SCK)      5               4            SCK
+    ICSP 3 (SCK)         5               4            SCK
                   
-    ICSP 4 (MOSI)     7               6            SDI (MOSI)
+    ICSP 4 (MOSI)        7               6            SDI (MOSI)
                   
-    Pin D9              9               10             D/C
+    Pin D9               9               10           D/C
                   
-    ICSP 5 (RESET)      11                12             RESET
+    ICSP 5 (RESET)      11               12           RESET
                   
-    Pin D10             14                15             CS
+    Pin D10             14               15           CS
                   
-    GND             8               NA             GND
+    GND                  8               NA           GND
                   
-    3.3 VDC                                      Vcc
+    3.3 VDC                                           Vcc
                   
-    2   Encoder A         
+    2 Encoder A         
                   
-    3   Encoder B         
+    3 Encoder B         
                   
-    GND   Encoder GND & Step PB GND         
+    GND Encoder GND & Step PB GND         
                   
-    A3    Step PB         
+    A3 Step PB         
                   
-    A4    SDA  to Si5351          
+    A4 SDA  to Si5351          
                   
-    A5    SCL to Si5351         
+    A5 SCL to Si5351         
                   
-    Gnd   To Si5351         
+    Gnd To Si5351         
                   
-    5 VDC   To Si5351         
+    5VDC To Si5351         
                   
-    5   Toggle USB/LSB          
+    5 Toggle USB/LSB          
                   
-    12    PB "Tune"         
-Modified 3/21/2015 finalized for the 40M SSB transceiver.
-  
-  
-          D4 = the Tone Pin
+    12 PB "Tune"         
+
+    D4 the Tone Pin
         
 */
 
 
-#include "SPI.h"
-#include "Adafruit_GFX.h"
-#include "TFT_ILI9340.h"
-#include "Rotary.h"
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <TFT_ILI9340.h>
+#include <Rotary.h>
 #include <toneAC.h>
-#include "si5351.h"
-#include "Wire.h"
+#include <si5351.h>
+#include <Wire.h>
 
 #define NOTE_B5 988
 
@@ -75,19 +78,30 @@ Modified 3/21/2015 finalized for the 40M SSB transceiver.
 #define __RST 8
 #define ENCODER_B    2                      // Encoder pin A
 #define ENCODER_A    3                     // Encoder pin B
-#define ENCODER_BTN  A3
+#define ENCODER_BTN  A3                   // Encoder Push Button Hz selection
 
 
 // Color definitions
-#define BLACK   0x0000
-#define BLUE    0x001F
-#define RED     0xF800
-#define GREEN   0x07E0
-#define CYAN    0x07FF
-#define MAGENTA 0xF81F
-#define YELLOW  0xFFE0  
-#define WHITE   0xFFFF
-#define PURPLE  0x780F
+#define BLACK           0x0000     
+#define NAVY            0x000F     
+#define DARKGREEN       0x03E0     
+#define DARKCYAN        0x03EF     
+#define MAROON          0x7800     
+#define PURPLE          0x780F      
+#define OLIVE           0x7BE0      
+#define LIGHTGREY       0xC618     
+#define DARKGREY        0x7BEF      
+#define BLUE            0x001F     
+#define GREEN           0x07E0     
+#define CYAN            0x07FF   
+#define RED             0xF800     
+#define MAGENTA         0xF81F      
+#define YELLOW          0xFFE0      
+#define WHITE           0xFFFF    
+#define ORANGE          0xFD20     
+#define GREENYELLOW     0xAFE5      
+#define PINK            0xF81F
+
 
 TFT_ILI9340 tft = TFT_ILI9340(__CS, __DC, __RST);
 
@@ -109,15 +123,14 @@ int BSW = 0;
 const int tonepin = 4; //tune up tone
 const int SW = 5; //selects upper or lower sideband
 const int SW1 =12; // provides the TUNE fucntion
-
-// STUFF ADDED HERE
 const int MAXBANDS = 5; // the number of bands we are using
+
 //FIXME is 6 and 7 an error, should it be D6 and D7?
 const int SWBAND[MAXBANDS]={A0,A1,A2,6,7};  // 80m on A0,40m on A1,20m on A2,15m on D6,10m on D7
 const int_fast32_t rxfreqs[MAXBANDS]={12798500L,16198500L,23201680L,30300680,37400680}; // the default starting frequency for each band
+
+
 int lastband=0;         // used to keep track of the last band used
-
-
 int backlight = 0;
 int buttonState = 0;
 int lastButtonState = 0;
@@ -145,9 +158,10 @@ void setup(void) {
     pinMode(SW1, INPUT); //Tune
     digitalWrite(SW1,HIGH);
    
-    pinMode(A3,INPUT); // Connect to a button that goes to GND on push
+    pinMode(A3,INPUT); // Connect to a button/switch that goes to GND on push
     digitalWrite(A3,HIGH);
     pinMode(A1,INPUT); // IF sense
+    // FIXME What is this?
     //pinMode(Tx, OUTPUT);
     //digitalWrite(Tx, HIGH);
  
@@ -157,7 +171,7 @@ void setup(void) {
 
     for (lp=0;lp<MAXBANDS;lp++) // set up each bandswitch position
     {
-        pin=SWBAND[lp];        // gah!  I think this error was caused by a typo - SWBANDS should have been SWBAND (no S).
+        pin=SWBAND[lp];        
         pinMode(pin,INPUT_PULLUP);      
         digitalWrite(pin,HIGH);
     }
@@ -167,19 +181,21 @@ void setup(void) {
     tft.setBitrate(24000000);
 #endif
 
-    tft.fillScreen(0x0000); // 0x07F0 = lt green, 0xF810 = rose, 0xF840 = rust, 0xF820 = orange
+    tft.fillScreen(0x0000); // 0x07F0 = lt green, 0xF810 = rose, 0xF840 = rust, 0xF820 = orange full list of most used colors defined at start
     tft.setRotation(1); // landsacape versus portrait
-    /*tft.drawRect(212, 94, 84,32, WHITE); //call sign on the face*/
+    /*tft.drawRect(212, 94, 84,32, WHITE); //Uncomment if you wish to draw a rectangle around this variable*/
     tft.fillRect(214,96,81,28,BLACK);
     tft.setCursor(220, 100);
     tft.setTextColor(RED);  
     tft.setTextSize(3);
-    tft.print("N4AXE");
+    tft.print("N4AXE"); //Callsign
     tft.setCursor(220, 130);
     tft.setTextColor(GREEN);  
     tft.setTextSize(2);
-    tft.print("Benjamin");
-    
+    tft.print("Benjamin"); //Name
+
+
+    // OLD CODE UNUSED
     /*tft.drawRect(16, 94, 64,32, WHITE); //call sign on the face*/
     /*tft.fillRect(18,96,60,28,BLACK);*/
     
@@ -188,19 +204,20 @@ void setup(void) {
      tft.setCursor(22, 100);  
      tft.println(" SB");*/
     
+    tft.setCursor(45,190);
+    tft.setTextSize(2);
+    tft.setTextColor(BLUE);
+    tft.println("LETS BUILD SOMETHING"); // Optional Snappy text line two
+
     
     tft.setCursor(20,208);
     tft.setTextSize(2);
     tft.setTextColor(RED);
-    tft.println("Homebrew SSB Transceiver");
-
-     tft.setCursor(45,190);
-    tft.setTextSize(2);
-    tft.setTextColor(BLUE);
-    tft.println("LETS BUILD SOMETHING");
+    tft.println("Homebrew SSB Transceiver"); //Optional Snappy text
     
-    /*ft.drawRect(120, 100, 64,32, WHITE); //Tune Block*/
-   /* tft.fillRect(122,102,59,28,BLACK);*/
+    
+    /*ft.drawRect(120, 100, 64,32, WHITE); //Tune Block Uncomment if you wish to draw a rectangle around this variable*/
+   /* tft.fillRect(122,102,59,28,BLACK);*/ // Removed; less uneeded drawing is good
 
     //  initialize the Si5351
   
@@ -223,21 +240,27 @@ void setup(void) {
 void setincrement(void) {
 
     switch(increment) {
-        case 10:
+         //FIX ME I DO NOT WORK
+         /*case 1:
+            increment = 1;
+            hertz = "   1";
+            break;*/
+        
+         case 10:
             increment = 100;
-            hertz = "100";
+            hertz = " 100";
             break;
 
         case 100:
             increment = 1000;
-            hertz="  1K";
+            hertz=" 1K";
             break;
 
         case 1000:
             increment = 10000;
             hertz=" 10K";
             break;
-        /* i guess we dont use these 2 incr's 
+        /* Uncomment to use if needed
         case 10000:
             increment = 100000;
             hertz="  100K";
@@ -248,7 +271,7 @@ void setincrement(void) {
             break;
         */
 
-        default:
+        default: //Set the default frequency change increment
             increment = 10;
             hertz = " 10";
             break;
@@ -267,7 +290,7 @@ void showFreq(void) {
     tens = ((((rx)-bfo )/10)%10);
     ones = ((((rx)-bfo )/1)%10);
      
-    /*tft.drawRect(28, 10, 280,48, WHITE);*/
+    /*tft.drawRect(28, 10, 280,48, WHITE); Uncomment if you wish to draw a rectangle around this variable*/
     tft.fillRect(30, 12, 276,44, BLACK);
     tft.setTextSize(4);
     tft.setTextColor(WHITE);
@@ -319,7 +342,7 @@ ISR(PCINT2_vect) {
     }
 }
 
-/* this is a fuction declaration it should be twords the top of the file
+/* this is a fuction declaration it should be toward the top of the file
 it makes it so this function can be seen before it is defined later
 */
 
@@ -378,7 +401,7 @@ void loop(void)
         si5351.set_freq(bfo  , SI5351_PLL_FIXED, SI5351_CLK2);
         rx2 = rx;
         
-        /* tft.drawRect(180, 66, 80,23,WHITE); */
+        /* tft.drawRect(180, 66, 80,23,WHITE); Uncomment if you wish to draw a rectangle around this variable*/
         tft.fillRect(182, 68, 77, 20, BLACK);
         tft.setCursor(200,70);
         tft.setTextColor(YELLOW);
@@ -391,12 +414,12 @@ void loop(void)
     if(buttonstate == LOW) {
         setincrement(); 
         
-       /* tft.drawRect(180, 66, 80,23,WHITE); */
+       /* tft.drawRect(180, 66, 80,23,WHITE); Uncomment if you wish to draw a rectangle around this variable*/
         tft.fillRect(182, 68, 77, 20, BLACK);
         // tft.print(hertz);
 
         tft.setCursor(200,70);
-        tft.setTextColor(BLACK); // blanks out the old setting
+        tft.setTextColor(BLACK); // blanks out the old setting This needs to be the same color as your background or boxfill color 
         tft.setTextSize(2);
         tft.print(hertz);
         delay(10);
@@ -431,7 +454,7 @@ void checksideband(void) {
             lsbusb = 'u';
             tft.setTextSize(3);
             tft.setCursor(20,100);
-             tft.setTextColor(BLACK); // blanks out the old setting
+             tft.setTextColor(BLACK); // blanks out the old setting This needs to be the same color as your background or boxfill color 
             tft.println("LSB");
             delay(1); 
             tft.setTextColor(RED);
@@ -453,7 +476,7 @@ void checksideband(void) {
             lsbusb = 'l';
             tft.setTextSize(3);
             tft.setCursor(20,100);
-             tft.setTextColor(BLACK); // blanks out the old setting
+             tft.setTextColor(BLACK); // blanks out the old setting, This needs to be the same color as your background or boxfill color 
             tft.println("USB");
             delay(1); 
             tft.setTextColor(RED); 
@@ -538,7 +561,7 @@ void CheckMode(void) {
         else {
 
             tft.setTextSize(3);    // This prints a black TUNE over the purple TUNE and makes it disappear from the scereen
-            tft.setTextColor(BLACK);
+            tft.setTextColor(BLACK); // This needs to be set to whatever the background color for this variables box is
             tft.setCursor(110, 110);
             tft.print("TUNE");
          
