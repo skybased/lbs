@@ -1,0 +1,15 @@
+Phase Noise Reduction using 4X
+
+Frequency Generation
+
+ 
+
+With the advent of the Si5351, immediately the naysayers panned the device screaming poor phase noise properties. Then some of those same naysayers stated that if you generated the desired frequency at 4 times that frequency and then divided that output by 4 there would be an actual phase noise improvement over generating the frequency at the fundamental. Improvements in the 6 to 12 dB range have been measured.
+
+Several sketches and hardware used with the LBS have been tested using that principal. The generation of the desired frequency was somewhat simple and involved a rudimentary multiplication in the code like 4*Frequency. The trick was more in how to handle the rotary encoder so that one increment of the encoder was one increment and not 4*increment. N6QW found a way to do that so that the Fout is at 4X but that the encoder is 1X.
+
+The next problem was how to divide down the signal so that the LO was opearting at the desired frequency and not 4X. That was done with a Dual D Type flip flop, the SN74AC74 which has an upper frequency limit compatible with the upper frequency limit of the Si5351.
+
+Their is a bonus with this process in that the divide down by 4 produces a quadrature output which now makes this suitable for the SDR applications by having I and Q channels at the same frequency but 90 degrees out of phase.
+
+The sketch for the 240X320 TFT display uses this technique and the schematic for the Dual D Flip Flop is shown below. Simply input the Fout of the Si5351 for the VFO (CLK0) and take the output out of either pin 6 or pin 9 on the SN74AC74.

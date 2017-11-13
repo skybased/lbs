@@ -1,0 +1,33 @@
+Source:	C:/Users/Benjamin/Desktop/DDBM/DDBM2/Audio Amplifier/Audio Amplifier.sch
+Date:	9/22/2017 8:35:29 AM
+Tool:	Eeschema 4.0.7
+Component Count:	28
+Ref	Value	Part	Footprint	Description	Vendor
+C1	10 NF	device:C_Small		Unpolarized capacitor	
+C2	100NF	device:C		Unpolarized capacitor	
+C3	100NF	device:C		Unpolarized capacitor	
+C4	100Ufd	device:C		Unpolarized capacitor	
+CP2	4.7Ufd	device:CP		Polarised capacitor	
+CP3	470Ufd	device:CP		Polarised capacitor	
+J1	SMA Female	conn:Conn_Coaxial	Connectors:SMA_THT_Jack_Straight	coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, ...)	
+LS1	8 Ohm Speaker Isolated	device:Speaker		speaker 	
+Q1	2N3904	transistors:2N3904	TO_SOT_Packages_THT:TO-92_Molded_Narrow	40V Vce, 0.2A Ic, NPN, Small Signal Transistor, TO-92	
+Q2	2N3904	transistors:2N3904	TO_SOT_Packages_THT:TO-92_Molded_Narrow	40V Vce, 0.2A Ic, NPN, Small Signal Transistor, TO-92	
+Q3	2N3906	transistors:2N3906	TO_SOT_Packages_THT:TO-92_Molded_Narrow	-40V Vce, -0.2A Ic, PNP, Small Signal Transistor, TO-92	
+Q4	2N3904	transistors:2N3904	TO_SOT_Packages_THT:TO-92_Molded_Narrow	40V Vce, 0.2A Ic, NPN, Small Signal Transistor, TO-92	
+R4	1K	device:R		Resistor	
+R5	100 R	device:R		Resistor	
+R8	10K	device:R		Resistor	
+R9	1R 1/2W	device:R		Resistor	
+R10	1R 1/2W	device:R		Resistor	
+R11	1.3k	device:R		Resistor	
+RV1	10k Trim	device:POT_TRIM		Trim-Potentiometer	
+c5	1500pf	device:C		Unpolarized capacitor	
+cf1	10Ufd	device:CP		Polarised capacitor	
+d1	1N4148	device:D_ALT		Diode, alternativ symbol	
+d2	1N4148	device:D_ALT		Diode, alternativ symbol	
+r1	10k	device:R		Resistor	
+r2	100k	device:R		Resistor	
+r3	470R-1/2W	device:R		Resistor	
+r6	100k	device:R		Resistor	
+r7	10k	device:R		Resistor	
